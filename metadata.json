@@ -1,0 +1,6 @@
+{
+  "name": "Reçu Pro Bénin - par jboy Ozzy (Clovis Arsène junior DOUBOGAN)",
+  "description": "Créez vos reçus professionnels en 10 secondes au Bénin. Mobile-first, WhatsApp, MTN MoMo (0157586308) & Celtiis Cash (0141159129), téléchargement PDF pro et suivi des acomptes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

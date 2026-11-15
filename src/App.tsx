@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { HeroHome } from './components/HeroHome';
+import { PresentationPage } from './components/PresentationPage';
 import { ReceiptForm } from './components/ReceiptForm';
 import { ReceiptHistory } from './components/ReceiptHistory';
 import { SellerProfileView } from './components/SellerProfileModal';
@@ -10,6 +11,7 @@ import { SubscriptionModal } from './components/SubscriptionModal';
 import { SupportAuthorModal } from './components/SupportAuthorModal';
 import { CreatorBadge } from './components/CreatorBadge';
 import { BottomNavBar } from './components/BottomNavBar';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { Receipt, SellerProfile, SubscriptionInfo } from './types/receipt';
 import {
   getStoredSellerProfile,
@@ -25,7 +27,7 @@ import { openWhatsAppChat } from './utils/whatsapp';
 import confetti from 'canvas-confetti';
 
 export function App() {
-  const [currentTab, setCurrentTab] = useState<'home' | 'create' | 'history' | 'profile' | 'subscription'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'presentation' | 'create' | 'history' | 'profile' | 'subscription'>('home');
   const [sellerProfile, setSellerProfile] = useState<SellerProfile>(getStoredSellerProfile());
   const [receipts, setReceipts] = useState<Receipt[]>(getStoredReceipts());
   const [subscription, setSubscription] = useState<SubscriptionInfo>(getStoredSubscription());
@@ -221,9 +223,34 @@ export function App() {
               }
             }}
             onViewHistory={() => setCurrentTab('history')}
+            onOpenPresentation={() => setCurrentTab('presentation')}
+            onOpenProfile={() => setCurrentTab('profile')}
+            onOpenSubscription={() => setIsSubscriptionModalOpen(true)}
+            onSelectReceipt={(receipt) => {
+              setPreviewReceipt(receipt);
+              setIsPreviewOpen(true);
+            }}
+            sellerProfile={sellerProfile}
+            subscription={subscription}
+            recentReceipts={receipts}
+            receiptsCount={receipts.length}
+            canCreateMore={canCreateMore}
+          />
+        )}
+
+        {currentTab === 'presentation' && (
+          <PresentationPage
+            onStartCreate={() => {
+              if (!canCreateMore) {
+                setIsSubscriptionModalOpen(true);
+              } else {
+                setEditingReceipt(null);
+                setCurrentTab('create');
+              }
+            }}
             onOpenSubscription={() => setIsSubscriptionModalOpen(true)}
             onOpenSupportModal={() => setIsSupportModalOpen(true)}
-            receiptsCount={receipts.length}
+            onGoHome={() => setCurrentTab('home')}
             canCreateMore={canCreateMore}
           />
         )}
@@ -343,6 +370,9 @@ export function App() {
         subscription={subscription}
         onOpenSupportModal={() => setIsSupportModalOpen(true)}
       />
+
+      {/* Offline Connectivity Indicator */}
+      <OfflineIndicator />
     </div>
   );
 }

@@ -3,8 +3,8 @@ import { Home, PlusCircle, History, Store, Crown, Heart } from 'lucide-react';
 import { SubscriptionInfo } from '../types/receipt';
 
 interface BottomNavBarProps {
-  currentTab: 'home' | 'create' | 'history' | 'profile' | 'subscription';
-  setCurrentTab: (tab: 'home' | 'create' | 'history' | 'profile' | 'subscription') => void;
+  currentTab: 'home' | 'presentation' | 'create' | 'history' | 'profile' | 'subscription';
+  setCurrentTab: (tab: 'home' | 'presentation' | 'create' | 'history' | 'profile' | 'subscription') => void;
   receiptsCount: number;
   subscription: SubscriptionInfo;
   onOpenSupportModal: () => void;

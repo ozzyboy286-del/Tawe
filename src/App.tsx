@@ -63,6 +63,45 @@ export function App() {
     saveStoredSubscription(subscription);
   }, [subscription]);
 
+  // Verify FedaPay redirect callback if returning from hosted checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const txId = params.get('id');
+    const isCallback = params.get('fedapay_callback') === '1';
+    if (!txId || !isCallback) return;
+
+    const verifyRedirectPayment = async () => {
+      try {
+        const resp = await fetch(`/api/payments/fedapay/verify/${encodeURIComponent(txId)}`);
+        if (!resp.ok) return;
+        const data = (await resp.json()) as { success?: boolean; isApproved?: boolean };
+        if (data.success && data.isApproved) {
+          const now = new Date();
+          const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          setSubscription((prev) => ({
+            ...prev,
+            isSubscribed: true,
+            plan: 'PRO_MONTHLY',
+            subscriptionDate: now.toISOString(),
+            expiryDate: expiry.toISOString(),
+            fedapayTransactionId: txId,
+          }));
+          confetti({
+            particleCount: 90,
+            spread: 90,
+            origin: { y: 0.6 },
+          });
+        }
+      } catch (err) {
+        console.error('FedaPay callback verification error:', err);
+      } finally {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    verifyRedirectPayment();
+  }, []);
+
   // Subscription verification check
   const canCreateMore = subscription.isSubscribed || subscription.freeReceiptsUsed < subscription.maxFreeReceipts;
 
@@ -183,12 +222,16 @@ export function App() {
   };
 
   // Handle subscription confirmation
-  const handleSubscribeSuccess = () => {
+  const handleSubscribeSuccess = (transactionId?: string) => {
+    const now = new Date();
+    const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     setSubscription({
       ...subscription,
       isSubscribed: true,
       plan: 'PRO_MONTHLY',
-      subscriptionDate: new Date().toISOString(),
+      subscriptionDate: now.toISOString(),
+      expiryDate: expiry.toISOString(),
+      fedapayTransactionId: transactionId,
     });
   };
 
@@ -341,11 +384,12 @@ export function App() {
         onPaymentSuccess={handlePaymentSuccess}
       />
 
-      {/* Subscription Modal (MTN MoMo / Celtiis Cash) */}
+      {/* Subscription Modal (FedaPay + MTN MoMo / Celtiis Cash) */}
       <SubscriptionModal
         isOpen={isSubscriptionModalOpen}
         onClose={() => setIsSubscriptionModalOpen(false)}
         subscription={subscription}
+        sellerProfile={sellerProfile}
         onSubscribeSuccess={handleSubscribeSuccess}
       />
 

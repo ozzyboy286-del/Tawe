@@ -50,6 +50,7 @@ export interface SubscriptionInfo {
   maxFreeReceipts: number; // 3
   subscriptionDate?: string;
   expiryDate?: string;
+  fedapayTransactionId?: string;
   plan: 'FREE_TRIAL' | 'PRO_MONTHLY';
   priceMonthly: number; // 1500 FCFA
 }
